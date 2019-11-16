@@ -219,18 +219,21 @@ func readName(p []byte, begin int) (string, int) {
 	l := int(p[begin])
 
 	for l != 0 {
+		//fmt.Printf("l: %v\n", l)
 		if l > 64 {
-			off := binary.BigEndian.Uint16(p[begin:]) - 0xC000
-			fmt.Printf("compression enabled(n: %d, offset: %d)\n", l, off)
-			//	fmt.Printf("p[off]: %v\n", p[off:])
-			suf, _ := readName(p[off:], 0)
+			off := binary.BigEndian.Uint16(p[begin+n:]) - 0xC000
+			fmt.Printf("compression!(n: %d, offset: %d)\n", l, off)
+			//fmt.Printf("p[begin:begin+2]: %v\n", p[begin+n:begin+n+2])
+			//fmt.Printf("p[begin]: %v\n", int(p[begin+n]))
+			//fmt.Printf("p[off]: %v\n", p[n+int(off):])
+			suf, _ := readName(p, int(off))
 			return name + suf, n + 2
 		}
 
-		label := string(p[n+1 : n+l+1])
+		label := string(p[begin+n+1 : begin+n+l+1])
 		name = name + label + "."
 		n = n + l + 1
-		l = int(p[n])
+		l = int(p[begin+n])
 		//fmt.Printf("l: %v, n: %d, l: %d\n", label, n, l)
 	}
 	return name, n
@@ -281,6 +284,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	}
 	alen := 0
 	for i := 0; i < int(h.AnCount()); i++ {
+		//fmt.Printf("ans[12+qlen+alen:]: %v\n", ans[12+qlen+alen:])
 		a, an, err := ParseResourceRecord(ans, 12+qlen+alen)
 		fmt.Printf("anser anser: %v(size: %v)\n", a, an)
 		if err != nil {
