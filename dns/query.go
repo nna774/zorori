@@ -256,9 +256,9 @@ func (q *Question) Read(p []byte) (n int, err error) {
 			p[n] = label[i]
 			n++
 		}
-		p[n] = 0                               // eos
-		binary.BigEndian.PutUint16(p[n+1:], 1) // ! A
-		binary.BigEndian.PutUint16(p[n+3:], 1) // IN
+		p[n] = 0 // eos
+		binary.BigEndian.PutUint16(p[n+1:], uint16(q.t))
+		binary.BigEndian.PutUint16(p[n+3:], IN)
 	}
 	q.done = true
 	return n + 5, nil
