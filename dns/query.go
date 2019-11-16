@@ -71,7 +71,7 @@ func NewHeader() Header {
 
 func NewHeaderContent() HeaderContent {
 	id := uint16(rand.Uint32())
-	fmt.Printf("id: %v\n", id)
+	//fmt.Printf("id: %v\n", id)
 	return HeaderContent{
 		ID: id,
 	}
@@ -151,8 +151,8 @@ func (h *Header) Read(p []byte) (n int, err error) {
 	}
 	h.done = true
 	n, err = buf.Read(p)
-	fmt.Printf("read: %d\n", n)
-	fmt.Printf("p: %v\n", p[:n])
+	//fmt.Printf("read: %d\n", n)
+	//fmt.Printf("p: %v\n", p[:n])
 	return n, err
 }
 
