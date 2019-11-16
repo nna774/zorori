@@ -211,7 +211,7 @@ func readName(p []byte, begin int) (string, int) {
 		if l > 64 {
 			off := binary.BigEndian.Uint16(p[begin:]) - 0xC000
 			fmt.Printf("compression enabled(n: %d, offset: %d)\n", l, off)
-			fmt.Printf("p[off]: %v\n", p[off:])
+			//	fmt.Printf("p[off]: %v\n", p[off:])
 			suf, _ := readName(p[off:], 0)
 			return name + suf, n + 2
 		}
