@@ -27,7 +27,6 @@ func NewDoHResolver(url string) Resolver {
 // AResolve resolves A
 func (r *DoHResolver) AResolve(domain string) (dns.AResult, error) {
 	query := dns.NewQuery(domain, dns.A)
-	query.Header.SetRD(true)
 	var buf bytes.Buffer
 	n, err := io.Copy(&buf, &query)
 	if err != nil {

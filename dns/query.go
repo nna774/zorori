@@ -13,11 +13,11 @@ import (
 
 // Header is DNS header
 type Header struct {
-	c    HeaderContent
+	c    headerContent
 	done bool
 }
 
-type HeaderContent struct {
+type headerContent struct {
 	ID      uint16
 	Flags   uint16
 	QdCount uint16
@@ -33,12 +33,14 @@ type Question struct {
 	done bool
 }
 
+// Query is question from client
 type Query struct {
 	Header   Header
 	Question Question
 	done     bool
 }
 
+// ResourceRecord is type for Resource Record
 type ResourceRecord struct {
 	Name        string
 	T           QueryType
@@ -50,6 +52,7 @@ type ResourceRecord struct {
 	head        []byte
 }
 
+// Answer is anser from server
 type Answer struct {
 	Header      Header
 	Questions   []Question
@@ -70,6 +73,7 @@ func (r ResourceRecord) String() string {
 	)
 }
 
+// ClassString shows class
 func (r *ResourceRecord) ClassString() string {
 	if r.Class == IN {
 		return "IN"
@@ -77,6 +81,7 @@ func (r *ResourceRecord) ClassString() string {
 	return fmt.Sprintf("unknown(%v)", r.Class)
 }
 
+// TypeString shows rr type
 func (r *ResourceRecord) TypeString() string {
 	switch r.T {
 	case A:
@@ -90,6 +95,7 @@ func (r *ResourceRecord) TypeString() string {
 	}
 }
 
+// ShowRdata shows rr rdata
 func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	switch t {
 	case A:
@@ -102,6 +108,7 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	}
 }
 
+// CNAMETO returns rr cname if it is cname
 func (r *ResourceRecord) CNAMETO() (string, error) {
 	if r.T != CNAME {
 		return "", errors.New("not CNAME")
@@ -109,6 +116,7 @@ func (r *ResourceRecord) CNAMETO() (string, error) {
 	return r.ShowRdata(CNAME), nil
 }
 
+// IP returns ip addr if it is A
 func (r *ResourceRecord) IP() (net.IP, error) {
 	if r.T != A {
 		return nil, errors.New("not A")
@@ -116,109 +124,107 @@ func (r *ResourceRecord) IP() (net.IP, error) {
 	return net.IPv4(r.Rdata[0], r.Rdata[1], r.Rdata[2], r.Rdata[3]), nil
 }
 
+// NewHeader is ctor of Header
 func NewHeader() Header {
-	return Header{c: NewHeaderContent()}
+	return Header{c: newHeaderContent()}
 }
 
-func NewHeaderContent() HeaderContent {
+func newHeaderContent() headerContent {
 	id := uint16(rand.Uint32())
 	//fmt.Printf("id: %v\n", id)
-	return HeaderContent{
+	return headerContent{
 		ID: id,
 	}
 }
 
-// ID is query ID
-func (h *Header) ID() uint16 {
+func (h *Header) id() uint16 {
 	return h.c.ID
+}
+func (h *Header) setID(id uint16) {
+	h.c.ID = id
 }
 
 func (h *Header) setFlags(f uint16) {
 	h.c.Flags = f
 }
 
-func (h *Header) QR() bool {
+func (h *Header) qr() bool {
 	return (h.c.Flags & 0x8000) != 0
 }
-
-func (h *Header) SetQR(qr bool) {
+func (h *Header) setQR(qr bool) {
 	h.c.Flags = (h.c.Flags & 0x7fff)
 	if qr {
 		h.c.Flags = h.c.Flags | (1 << 15)
 	}
 }
 
-func (h *Header) RD() bool {
+func (h *Header) rd() bool {
 	return (h.c.Flags & 0x100) != 0
 }
 
-func (h *Header) SetRD(qr bool) {
+func (h *Header) setRD(qr bool) {
 	h.c.Flags = (h.c.Flags & 0xfeff)
 	if qr {
 		h.c.Flags = h.c.Flags | (1 << 8)
 	}
 }
 
-func (h *Header) OpCode() int {
+func (h *Header) opCode() int {
 	return int(h.c.Flags&0x7800) >> 11
 }
-func (h *Header) AA() bool {
+func (h *Header) aa() bool {
 	return (h.c.Flags & 0x0400) != 0
 }
-func (h *Header) TC() bool {
+func (h *Header) tc() bool {
 	return (h.c.Flags & 0x0200) != 0
 }
-func (h *Header) RA() bool {
+func (h *Header) ra() bool {
 	return (h.c.Flags & 0x80) != 0
 }
-func (h *Header) Z() bool {
+func (h *Header) z() bool {
 	return (h.c.Flags & 0x40) != 0
 }
-func (h *Header) AD() bool {
+func (h *Header) ad() bool {
 	return (h.c.Flags & 0x20) != 0
 }
-func (h *Header) CD() bool {
+func (h *Header) cd() bool {
 	return (h.c.Flags & 0x10) != 0
 }
-func (h *Header) RCode() int {
+func (h *Header) rCode() int {
 	return int(h.c.Flags & 0xf)
 }
 
-func (h *Header) SetID(id uint16) {
-	h.c.ID = id
-}
-
-func (h *Header) SetQDCount(qdCount uint16) {
+func (h *Header) setQDCount(qdCount uint16) {
 	h.c.QdCount = qdCount
 }
-func (h *Header) SetANCount(anCount uint16) {
+func (h *Header) setANCount(anCount uint16) {
 	h.c.AnCount = anCount
 }
-func (h *Header) SetNSCount(nsCount uint16) {
+func (h *Header) setNSCount(nsCount uint16) {
 	h.c.NsCount = nsCount
 }
-func (h *Header) SetARCount(arCount uint16) {
+func (h *Header) setARCount(arCount uint16) {
 	h.c.ArCount = arCount
 }
-func (h *Header) QdCount() uint16 {
+func (h *Header) qdCount() uint16 {
 	return h.c.QdCount
 }
-func (h *Header) AnCount() uint16 {
+func (h *Header) anCount() uint16 {
 	return h.c.AnCount
 }
 func (h Header) String() string {
 	return fmt.Sprintf("{id: %v, qr: %v, opcode: %v, aa: %v, tc: %v, rd: %v, ra: %v, z: %v, ad: %v, cd: %v, rcode: %v, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
 		h.c.ID,
-		h.QR(),
-		h.OpCode(),
-		h.AA(),
-		h.TC(),
-		h.RD(),
-		h.RA(),
-		h.Z(),
-		h.AD(),
-		h.CD(),
-		h.RCode(),
+		h.qr(),
+		h.opCode(),
+		h.aa(),
+		h.tc(),
+		h.rd(),
+		h.ra(),
+		h.z(),
+		h.ad(),
+		h.cd(),
+		h.rCode(),
 		h.c.QdCount,
 		h.c.AnCount,
 		h.c.NsCount,
@@ -264,12 +270,14 @@ func (q *Question) Read(p []byte) (n int, err error) {
 	return n + 5, nil
 }
 
+// NewQuery is ctor of Query
 func NewQuery(domain string, t QueryType) Query {
 	q := Query{
 		Header:   NewHeader(),
 		Question: Question{name: domain, t: t},
 	}
-	q.Header.SetQDCount(1)
+	q.Header.setQDCount(1)
+	q.Header.setRD(true)
 	return q
 }
 
@@ -289,8 +297,8 @@ func (q *Query) Read(p []byte) (n int, err error) {
 	return hn + qn, nil
 }
 
-func ParseHeader(p []byte) (Header, int, error) {
-	h := HeaderContent{}
+func parseHeader(p []byte) (Header, int, error) {
+	h := headerContent{}
 	r := bytes.NewReader(p)
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -325,12 +333,12 @@ func readName(p []byte, begin int) (string, int) {
 	return name, n
 }
 
-func ParseQuestion(p []byte) (Question, int, error) {
+func parseQuestion(p []byte) (Question, int, error) {
 	name, n := readName(p, 0)
 	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 5, nil
 }
 
-func ParseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int, error) {
+func parseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int, error) {
 	name, n := readName(p, begin)
 	t := QueryType(binary.BigEndian.Uint16(p[begin+n:]))
 	class := Class(binary.BigEndian.Uint16(p[begin+n+2:]))
@@ -350,20 +358,21 @@ func ParseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int,
 	}, n + 10 + int(rdLength), nil
 }
 
+// ParseAnswer parses answer from server
 func ParseAnswer(ans []byte) (Answer, error) {
 	result := Answer{}
-	h, _, err := ParseHeader(ans)
+	h, _, err := parseHeader(ans)
 	fmt.Printf("anser header: %v\n", h)
 	if err != nil {
 		return result, err
 	}
 	result.head = ans
 	result.Header = h
-	result.Questions = make([]Question, h.QdCount())
-	result.Answers = make([]ResourceRecord, h.AnCount())
+	result.Questions = make([]Question, h.qdCount())
+	result.Answers = make([]ResourceRecord, h.anCount())
 	qlen := 0
-	for i := 0; i < int(h.QdCount()); i++ {
-		q, qn, err := ParseQuestion(ans[12+qlen:])
+	for i := 0; i < int(h.qdCount()); i++ {
+		q, qn, err := parseQuestion(ans[12+qlen:])
 		fmt.Printf("anser question: %v(size: %v)\n", q, qn)
 		if err != nil {
 			return result, err
@@ -372,9 +381,9 @@ func ParseAnswer(ans []byte) (Answer, error) {
 		qlen = qlen + qn
 	}
 	alen := 0
-	for i := 0; i < int(h.AnCount()); i++ {
+	for i := 0; i < int(h.anCount()); i++ {
 		//fmt.Printf("ans[12+qlen+alen:]: %v\n", ans[12+qlen+alen:])
-		a, an, err := ParseResourceRecord(ans, 12+qlen+alen, result.head)
+		a, an, err := parseResourceRecord(ans, 12+qlen+alen, result.head)
 		fmt.Printf("anser anser: %v(size: %v)\n", a, an)
 		if err != nil {
 			return result, err
@@ -385,6 +394,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	return result, err
 }
 
+// Same decides args is same domain
 func Same(lhs, rhs string) bool {
 	if lhs == rhs {
 		return true

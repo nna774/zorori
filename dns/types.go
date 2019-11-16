@@ -16,6 +16,7 @@ const (
 // QueryType is query type
 type QueryType int
 
+// Class is RR class
 type Class int
 
 // ShowQueryType returns query type
@@ -43,6 +44,7 @@ func (a *AResult) IP() net.IP {
 	return a.ip
 }
 
+// NewAResult is AResult ctor
 func NewAResult(ip net.IP) AResult {
 	return AResult{
 		ip: ip,
