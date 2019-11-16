@@ -122,7 +122,7 @@ func (h *Header) setFlags(f uint16) {
 }
 
 func (h *Header) QR() bool {
-	return (h.c.Flags & 1 << 15) != 0
+	return (h.c.Flags & 0x8000) != 0
 }
 
 func (h *Header) SetQR(qr bool) {
@@ -133,7 +133,7 @@ func (h *Header) SetQR(qr bool) {
 }
 
 func (h *Header) RD() bool {
-	return (h.c.Flags & 1 << 8) != 0
+	return (h.c.Flags & 0x100) != 0
 }
 
 func (h *Header) SetRD(qr bool) {
@@ -141,6 +141,31 @@ func (h *Header) SetRD(qr bool) {
 	if qr {
 		h.c.Flags = h.c.Flags | (1 << 8)
 	}
+}
+
+func (h *Header) OpCode() int {
+	return int(h.c.Flags&0x7800) >> 11
+}
+func (h *Header) AA() bool {
+	return (h.c.Flags & 0x0400) != 0
+}
+func (h *Header) TC() bool {
+	return (h.c.Flags & 0x0200) != 0
+}
+func (h *Header) RA() bool {
+	return (h.c.Flags & 0x80) != 0
+}
+func (h *Header) Z() bool {
+	return (h.c.Flags & 0x40) != 0
+}
+func (h *Header) AD() bool {
+	return (h.c.Flags & 0x20) != 0
+}
+func (h *Header) CD() bool {
+	return (h.c.Flags & 0x10) != 0
+}
+func (h *Header) RCode() int {
+	return int(h.c.Flags & 0xf)
 }
 
 func (h *Header) SetID(id uint16) {
@@ -166,8 +191,18 @@ func (h *Header) AnCount() uint16 {
 	return h.c.AnCount
 }
 func (h Header) String() string {
-	return fmt.Sprintf("{id: %v, f, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
+	return fmt.Sprintf("{id: %v, qr: %v, opcode: %v, aa: %v, tc: %v, rd: %v, ra: %v, z: %v, ad: %v, cd: %v, rcode: %v, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
 		h.c.ID,
+		h.QR(),
+		h.OpCode(),
+		h.AA(),
+		h.TC(),
+		h.RD(),
+		h.RA(),
+		h.Z(),
+		h.AD(),
+		h.CD(),
+		h.RCode(),
 		h.c.QdCount,
 		h.c.AnCount,
 		h.c.NsCount,
