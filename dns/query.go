@@ -216,7 +216,7 @@ func readName(p []byte, begin int) (string, int) {
 			return name + suf, n + 2
 		}
 
-		label := string(p[n : n+l+1])
+		label := string(p[n+1 : n+l+1])
 		name = name + label + "."
 		n = n + l + 1
 		l = int(p[n])
