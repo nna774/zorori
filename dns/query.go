@@ -37,13 +37,21 @@ type Query struct {
 	done     bool
 }
 
-type Answer struct {
+type ResourceRecord struct {
 	name     string
 	t        QueryType
 	class    Class
 	ttl      uint32
 	rdLength uint16
 	rdata    []byte
+}
+
+type Answer struct {
+	Header      Header
+	Questions   []Question
+	Answers     []ResourceRecord
+	Authorities []ResourceRecord
+	Additionals []ResourceRecord
 }
 
 func NewHeader() Header {
@@ -105,7 +113,12 @@ func (h *Header) SetNSCount(nsCount uint16) {
 func (h *Header) SetARCount(arCount uint16) {
 	h.c.ArCount = arCount
 }
-
+func (h *Header) QdCount() uint16 {
+	return h.c.QdCount
+}
+func (h *Header) AnCount() uint16 {
+	return h.c.AnCount
+}
 func (h Header) String() string {
 	return fmt.Sprintf("{id: %v, f, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
 		h.c.ID,
@@ -217,7 +230,7 @@ func ParseQuestion(p []byte) (Question, int, error) {
 	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 5, nil
 }
 
-func ParseAnswerSection(p []byte, begin int) (Answer, int, error) {
+func ParseResourceRecord(p []byte, begin int) (ResourceRecord, int, error) {
 	name, n := readName(p, begin)
 	t := QueryType(binary.BigEndian.Uint16(p[begin+n:]))
 	class := Class(binary.BigEndian.Uint16(p[begin+n+2:]))
@@ -225,21 +238,38 @@ func ParseAnswerSection(p []byte, begin int) (Answer, int, error) {
 	rdsize := binary.BigEndian.Uint16(p[begin+n+8:])
 	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdsize)
 	fmt.Printf("A: %d.%d.%d.%d\n", p[begin+n+10], p[begin+n+11], p[begin+n+12], p[begin+n+13]) // A!
-	return Answer{name: name}, n + 10 + int(rdsize), nil
+	return ResourceRecord{name: name}, n + 10 + int(rdsize), nil
 }
 
-func ParseAnswer(ans []byte) error {
+func ParseAnswer(ans []byte) (Answer, error) {
+	result := Answer{}
 	h, _, err := ParseHeader(ans)
 	fmt.Printf("anser header: %v\n", h)
 	if err != nil {
-		return err
+		return result, err
 	}
-	q, qn, err := ParseQuestion(ans[12:])
-	fmt.Printf("anser question: %v(size: %v)\n", q, qn)
-	if err != nil {
-		return err
+	result.Header = h
+	result.Questions = make([]Question, h.QdCount())
+	result.Answers = make([]ResourceRecord, h.AnCount())
+	qlen := 0
+	for i := 0; i < int(h.QdCount()); i++ {
+		q, qn, err := ParseQuestion(ans[12+qlen:])
+		fmt.Printf("anser question: %v(size: %v)\n", q, qn)
+		if err != nil {
+			return result, err
+		}
+		result.Questions[i] = q
+		qlen = qlen + qn
 	}
-	a, an, err := ParseAnswerSection(ans, 12+qn)
-	fmt.Printf("anser anser: %v(size: %v)\n", a, an)
-	return err
+	alen := 0
+	for i := 0; i < int(h.AnCount()); i++ {
+		a, an, err := ParseResourceRecord(ans, 12+qlen+alen)
+		fmt.Printf("anser anser: %v(size: %v)\n", a, an)
+		if err != nil {
+			return result, err
+		}
+		result.Answers[i] = a
+		alen = alen + an
+	}
+	return result, err
 }
