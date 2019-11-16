@@ -38,12 +38,12 @@ type Query struct {
 }
 
 type ResourceRecord struct {
-	name     string
-	t        QueryType
-	class    Class
-	ttl      uint32
-	rdLength uint16
-	rdata    []byte
+	Name     string
+	T        QueryType
+	Class    Class
+	TTL      uint32
+	RdLength uint16
+	Rdata    []byte
 }
 
 type Answer struct {
@@ -235,10 +235,17 @@ func ParseResourceRecord(p []byte, begin int) (ResourceRecord, int, error) {
 	t := QueryType(binary.BigEndian.Uint16(p[begin+n:]))
 	class := Class(binary.BigEndian.Uint16(p[begin+n+2:]))
 	ttl := binary.BigEndian.Uint32(p[begin+n+4:])
-	rdsize := binary.BigEndian.Uint16(p[begin+n+8:])
-	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdsize)
+	rdLength := binary.BigEndian.Uint16(p[begin+n+8:])
+	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdLength)
 	fmt.Printf("A: %d.%d.%d.%d\n", p[begin+n+10], p[begin+n+11], p[begin+n+12], p[begin+n+13]) // A!
-	return ResourceRecord{name: name}, n + 10 + int(rdsize), nil
+	return ResourceRecord{
+		Name:     name,
+		T:        t,
+		Class:    class,
+		TTL:      ttl,
+		RdLength: rdLength,
+		Rdata:    p[begin+n+10 : begin+n+10+int(rdLength)],
+	}, n + 10 + int(rdLength), nil
 }
 
 func ParseAnswer(ans []byte) (Answer, error) {
