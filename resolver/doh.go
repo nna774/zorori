@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var empty = dns.AResult{}
+
 // DoHResolver resolves by DoH
 type DoHResolver struct {
 	URL string
@@ -29,7 +31,7 @@ func (r *DoHResolver) AResolve(domain string) (dns.AResult, error) {
 	var buf bytes.Buffer
 	n, err := io.Copy(&buf, &query)
 	if err != nil {
-		return dns.AResult{}, errors.Wrap(err, "bie")
+		return empty, errors.Wrap(err, "bie")
 	}
 	fmt.Printf("buf: %v\n", buf.Bytes())
 	encoded := base64.RawURLEncoding.EncodeToString(buf.Bytes()[:n+1])
@@ -37,13 +39,30 @@ func (r *DoHResolver) AResolve(domain string) (dns.AResult, error) {
 	fmt.Printf("encoded: %v\n", encoded)
 	res, err := http.Get(q)
 	if err != nil {
-		return dns.AResult{}, errors.Wrap(err, "bie")
+		return empty, errors.Wrap(err, "bie")
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	fmt.Printf("body: %v\n", body)
 	fmt.Printf("bodys: %v\n", string(body))
-	dns.ParseAnswer(body)
+	ans, err := dns.ParseAnswer(body)
+	if err != nil {
+		return empty, err
+	}
+	ret := dns.AResult{}
+	searching := domain
+	for _, a := range ans.Answers {
+		if dns.Same(searching, a.Name) {
+			switch a.T {
+			case dns.A:
+				ip, _ := a.IP()
+				ret = dns.NewAResult(ip)
+				break
+			case dns.CNAME:
+				searching, _ = a.CNAMETO()
+			}
+		}
+	}
 
-	return dns.AResult{}, nil
+	return ret, nil
 }

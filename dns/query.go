@@ -3,9 +3,11 @@ package dns
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"strings"
 )
 
@@ -98,6 +100,20 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	default:
 		return "unknown"
 	}
+}
+
+func (r *ResourceRecord) CNAMETO() (string, error) {
+	if r.T != CNAME {
+		return "", errors.New("not CNAME")
+	}
+	return r.ShowRdata(CNAME), nil
+}
+
+func (r *ResourceRecord) IP() (net.IP, error) {
+	if r.T != A {
+		return nil, errors.New("not A")
+	}
+	return net.IPv4(r.Rdata[0], r.Rdata[1], r.Rdata[2], r.Rdata[3]), nil
 }
 
 func NewHeader() Header {
@@ -292,7 +308,7 @@ func readName(p []byte, begin int) (string, int) {
 		//fmt.Printf("l: %v\n", l)
 		if l > 64 {
 			off := binary.BigEndian.Uint16(p[begin+n:]) - 0xC000
-			fmt.Printf("compression!(n: %d, offset: %d)\n", l, off)
+			//fmt.Printf("compression!(n: %d, offset: %d)\n", l, off)
 			//fmt.Printf("p[begin:begin+2]: %v\n", p[begin+n:begin+n+2])
 			//fmt.Printf("p[begin]: %v\n", int(p[begin+n]))
 			//fmt.Printf("p[off]: %v\n", p[n+int(off):])
@@ -367,4 +383,20 @@ func ParseAnswer(ans []byte) (Answer, error) {
 		alen = alen + an
 	}
 	return result, err
+}
+
+func Same(lhs, rhs string) bool {
+	if lhs == rhs {
+		return true
+	}
+	if lhs[len(lhs)-1] == '.' {
+		if rhs[len(rhs)-1] != '.' {
+			return lhs[:len(lhs)-1] == rhs
+		}
+		return false
+	}
+	if rhs[len(rhs)-1] == '.' {
+		return lhs == rhs[:len(rhs)-1]
+	}
+	return false
 }

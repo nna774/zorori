@@ -42,3 +42,9 @@ func (a *AResult) Type() QueryType {
 func (a *AResult) IP() net.IP {
 	return a.ip
 }
+
+func NewAResult(ip net.IP) AResult {
+	return AResult{
+		ip: ip,
+	}
+}
