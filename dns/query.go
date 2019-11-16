@@ -38,12 +38,14 @@ type Query struct {
 }
 
 type ResourceRecord struct {
-	Name     string
-	T        QueryType
-	Class    Class
-	TTL      uint32
-	RdLength uint16
-	Rdata    []byte
+	Name        string
+	T           QueryType
+	Class       Class
+	TTL         uint32
+	RdLength    uint16
+	RdataOffset int
+	Rdata       []byte
+	head        []byte
 }
 
 type Answer struct {
@@ -52,17 +54,50 @@ type Answer struct {
 	Answers     []ResourceRecord
 	Authorities []ResourceRecord
 	Additionals []ResourceRecord
+	head        []byte
 }
 
 func (r ResourceRecord) String() string {
 	return fmt.Sprintf("{Name: %v, Type: %v, Class: %v, TTL: %d, RdLength: %d, Rdata: %v}",
 		r.Name,
-		r.T,
-		r.Class,
+		r.TypeString(),
+		r.ClassString(),
 		r.TTL,
 		r.RdLength,
-		r.Rdata,
+		r.ShowRdata(r.T),
 	)
+}
+
+func (r *ResourceRecord) ClassString() string {
+	if r.Class == IN {
+		return "IN"
+	}
+	return fmt.Sprintf("unknown(%v)", r.Class)
+}
+
+func (r *ResourceRecord) TypeString() string {
+	switch r.T {
+	case A:
+		return "A"
+	case NS:
+		return "NS"
+	case CNAME:
+		return "CNAME"
+	default:
+		return fmt.Sprintf("unknown(%v)", r.T)
+	}
+}
+
+func (r *ResourceRecord) ShowRdata(t QueryType) string {
+	switch t {
+	case A:
+		return fmt.Sprintf("%d.%d.%d.%d", r.Rdata[0], r.Rdata[1], r.Rdata[2], r.Rdata[3])
+	case CNAME:
+		name, _ := readName(r.head, r.RdataOffset)
+		return name
+	default:
+		return "unknown"
+	}
 }
 
 func NewHeader() Header {
@@ -244,7 +279,7 @@ func ParseQuestion(p []byte) (Question, int, error) {
 	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 5, nil
 }
 
-func ParseResourceRecord(p []byte, begin int) (ResourceRecord, int, error) {
+func ParseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int, error) {
 	name, n := readName(p, begin)
 	t := QueryType(binary.BigEndian.Uint16(p[begin+n:]))
 	class := Class(binary.BigEndian.Uint16(p[begin+n+2:]))
@@ -253,12 +288,14 @@ func ParseResourceRecord(p []byte, begin int) (ResourceRecord, int, error) {
 	//	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdLength)
 	//	fmt.Printf("A: %d.%d.%d.%d\n", p[begin+n+10], p[begin+n+11], p[begin+n+12], p[begin+n+13]) // A!
 	return ResourceRecord{
-		Name:     name,
-		T:        t,
-		Class:    class,
-		TTL:      ttl,
-		RdLength: rdLength,
-		Rdata:    p[begin+n+10 : begin+n+10+int(rdLength)],
+		Name:        name,
+		T:           t,
+		Class:       class,
+		TTL:         ttl,
+		RdLength:    rdLength,
+		RdataOffset: begin + n + 10,
+		Rdata:       p[begin+n+10 : begin+n+10+int(rdLength)],
+		head:        head,
 	}, n + 10 + int(rdLength), nil
 }
 
@@ -269,6 +306,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	if err != nil {
 		return result, err
 	}
+	result.head = ans
 	result.Header = h
 	result.Questions = make([]Question, h.QdCount())
 	result.Answers = make([]ResourceRecord, h.AnCount())
@@ -285,7 +323,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	alen := 0
 	for i := 0; i < int(h.AnCount()); i++ {
 		//fmt.Printf("ans[12+qlen+alen:]: %v\n", ans[12+qlen+alen:])
-		a, an, err := ParseResourceRecord(ans, 12+qlen+alen)
+		a, an, err := ParseResourceRecord(ans, 12+qlen+alen, result.head)
 		fmt.Printf("anser anser: %v(size: %v)\n", a, an)
 		if err != nil {
 			return result, err
