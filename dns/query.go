@@ -54,6 +54,17 @@ type Answer struct {
 	Additionals []ResourceRecord
 }
 
+func (r ResourceRecord) String() string {
+	return fmt.Sprintf("{Name: %v, Type: %v, Class: %v, TTL: %d, RdLength: %d, Rdata: %v}",
+		r.Name,
+		r.T,
+		r.Class,
+		r.TTL,
+		r.RdLength,
+		r.Rdata,
+	)
+}
+
 func NewHeader() Header {
 	return Header{c: NewHeaderContent()}
 }
@@ -236,8 +247,8 @@ func ParseResourceRecord(p []byte, begin int) (ResourceRecord, int, error) {
 	class := Class(binary.BigEndian.Uint16(p[begin+n+2:]))
 	ttl := binary.BigEndian.Uint32(p[begin+n+4:])
 	rdLength := binary.BigEndian.Uint16(p[begin+n+8:])
-	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdLength)
-	fmt.Printf("A: %d.%d.%d.%d\n", p[begin+n+10], p[begin+n+11], p[begin+n+12], p[begin+n+13]) // A!
+	//	fmt.Printf("name: %v, n: %d, type: %d, class: %d, ttl: %d, rdsize: %d\n", name, n, t, class, ttl, rdLength)
+	//	fmt.Printf("A: %d.%d.%d.%d\n", p[begin+n+10], p[begin+n+11], p[begin+n+12], p[begin+n+13]) // A!
 	return ResourceRecord{
 		Name:     name,
 		T:        t,
