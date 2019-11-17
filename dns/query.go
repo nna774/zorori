@@ -90,6 +90,8 @@ func (r *ResourceRecord) TypeString() string {
 		return "NS"
 	case CNAME:
 		return "CNAME"
+	case SOA:
+		return "SOA"
 	default:
 		return fmt.Sprintf("unknown(%v)", r.T)
 	}
@@ -103,6 +105,8 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	case CNAME:
 		name, _ := readName(r.head, r.RdataOffset)
 		return name
+	case SOA:
+		return "soasoa"
 	default:
 		return "unknown"
 	}
@@ -211,6 +215,9 @@ func (h *Header) qdCount() uint16 {
 }
 func (h *Header) anCount() uint16 {
 	return h.c.AnCount
+}
+func (h *Header) nsCount() uint16 {
+	return h.c.NsCount
 }
 func (h Header) String() string {
 	return fmt.Sprintf("{id: %v, qr: %v, opcode: %v, aa: %v, tc: %v, rd: %v, ra: %v, z: %v, ad: %v, cd: %v, rcode: %v, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
@@ -370,6 +377,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	result.Header = h
 	result.Questions = make([]Question, h.qdCount())
 	result.Answers = make([]ResourceRecord, h.anCount())
+	result.Authorities = make([]ResourceRecord, h.nsCount())
 	qlen := 0
 	for i := 0; i < int(h.qdCount()); i++ {
 		q, qn, err := parseQuestion(ans[12+qlen:])
@@ -390,6 +398,16 @@ func ParseAnswer(ans []byte) (Answer, error) {
 		}
 		result.Answers[i] = a
 		alen = alen + an
+	}
+	nslen := 0
+	for i := 0; i < int(h.nsCount()); i++ {
+		n, nn, err := parseResourceRecord(ans, 12+qlen+alen+nslen, result.head)
+		fmt.Printf("anser ns: %v(size: %v)\n", n, nn)
+		if err != nil {
+			return result, err
+		}
+		result.Authorities[i] = n
+		nslen = nslen + nn
 	}
 	return result, err
 }
