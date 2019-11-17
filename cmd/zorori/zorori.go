@@ -2,10 +2,15 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/nna774/zorori/resolver"
 )
+
+func init() {
+	rand.Seed(42)
+}
 
 func main() {
 	name := "www.jprs.co.jp"
