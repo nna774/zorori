@@ -417,6 +417,12 @@ func Same(lhs, rhs string) bool {
 	if lhs == rhs {
 		return true
 	}
+	if lhs == "" {
+		return rhs == "."
+	}
+	if rhs == "" {
+		return lhs == "."
+	}
 	if lhs[len(lhs)-1] == '.' {
 		if rhs[len(rhs)-1] != '.' {
 			return lhs[:len(lhs)-1] == rhs
