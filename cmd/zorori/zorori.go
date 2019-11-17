@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/nna774/zorori/resolver"
+	"github.com/nna774/zorori/resolver/doh"
 )
 
 func init() {
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	//	resolver := resolver.NewDoHResolver("https://public.dns.iij.jp/dns-query")
-	resolver := resolver.NewDoHResolver("https://dns.google/dns-query")
+	resolver := doh.NewDoHResolver("https://dns.google/dns-query")
 	res, err := resolver.AResolve(name)
 	if err != nil {
 		fmt.Printf("bie %v", err)
