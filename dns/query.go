@@ -410,6 +410,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 
 // Same decides args is same domain
 func Same(lhs, rhs string) bool {
+	// caseが異なっても同じであることを考える必要がある。
 	if lhs == rhs {
 		return true
 	}
