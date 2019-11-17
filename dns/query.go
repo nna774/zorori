@@ -381,7 +381,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	qlen := 0
 	for i := 0; i < int(h.qdCount()); i++ {
 		q, qn, err := parseQuestion(ans[12+qlen:])
-		fmt.Printf("anser question: %v(size: %v)\n", q, qn)
+		fmt.Printf("answer question: %v(size: %v)\n", q, qn)
 		if err != nil {
 			return result, err
 		}
@@ -392,7 +392,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	for i := 0; i < int(h.anCount()); i++ {
 		//fmt.Printf("ans[12+qlen+alen:]: %v\n", ans[12+qlen+alen:])
 		a, an, err := parseResourceRecord(ans, 12+qlen+alen, result.head)
-		fmt.Printf("anser anser: %v(size: %v)\n", a, an)
+		fmt.Printf("answer anser: %v(size: %v)\n", a, an)
 		if err != nil {
 			return result, err
 		}
@@ -402,7 +402,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	nslen := 0
 	for i := 0; i < int(h.nsCount()); i++ {
 		n, nn, err := parseResourceRecord(ans, 12+qlen+alen+nslen, result.head)
-		fmt.Printf("anser ns: %v(size: %v)\n", n, nn)
+		fmt.Printf("answer ns: %v(size: %v)\n", n, nn)
 		if err != nil {
 			return result, err
 		}

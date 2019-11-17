@@ -7,9 +7,9 @@ const (
 	A = 1
 	// NS is RR type NS
 	NS = 2
-	// CNAME is RR tyoe CNAME
+	// CNAME is RR type CNAME
 	CNAME = 5
-	// SOA is RR tyoe SOA
+	// SOA is RR type SOA
 	SOA = 6
 	// IN is IN
 	IN = 1
