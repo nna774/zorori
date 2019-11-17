@@ -368,7 +368,7 @@ func parseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int,
 // ParseAnswer parses answer from server
 func ParseAnswer(ans []byte) (Answer, error) {
 	result := Answer{}
-	h, _, err := parseHeader(ans)
+	h, offset, err := parseHeader(ans)
 	fmt.Printf("anser header: %v\n", h)
 	if err != nil {
 		return result, err
@@ -378,36 +378,32 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	result.Questions = make([]Question, h.qdCount())
 	result.Answers = make([]ResourceRecord, h.anCount())
 	result.Authorities = make([]ResourceRecord, h.nsCount())
-	qlen := 0
 	for i := 0; i < int(h.qdCount()); i++ {
-		q, qn, err := parseQuestion(ans[12+qlen:])
+		q, qn, err := parseQuestion(ans[offset:])
 		fmt.Printf("answer question: %v(size: %v)\n", q, qn)
 		if err != nil {
 			return result, err
 		}
 		result.Questions[i] = q
-		qlen = qlen + qn
+		offset += qn
 	}
-	alen := 0
 	for i := 0; i < int(h.anCount()); i++ {
-		//fmt.Printf("ans[12+qlen+alen:]: %v\n", ans[12+qlen+alen:])
-		a, an, err := parseResourceRecord(ans, 12+qlen+alen, result.head)
+		a, an, err := parseResourceRecord(ans, offset, result.head)
 		fmt.Printf("answer anser: %v(size: %v)\n", a, an)
 		if err != nil {
 			return result, err
 		}
 		result.Answers[i] = a
-		alen = alen + an
+		offset += an
 	}
-	nslen := 0
 	for i := 0; i < int(h.nsCount()); i++ {
-		n, nn, err := parseResourceRecord(ans, 12+qlen+alen+nslen, result.head)
+		n, nn, err := parseResourceRecord(ans, offset, result.head)
 		fmt.Printf("answer ns: %v(size: %v)\n", n, nn)
 		if err != nil {
 			return result, err
 		}
 		result.Authorities[i] = n
-		nslen = nslen + nn
+		offset += nn
 	}
 	return result, err
 }
