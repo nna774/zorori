@@ -106,7 +106,10 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 		name, _ := readName(r.head, r.RdataOffset)
 		return name
 	case SOA:
-		return "soasoa"
+		mname, mn := readName(r.head, r.RdataOffset)
+		rname, rn := readName(r.head, r.RdataOffset+mn+1)
+		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+1+rn+2:])
+		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
 	default:
 		return "unknown"
 	}
