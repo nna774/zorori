@@ -51,6 +51,7 @@ func (r *DoHResolver) AResolve(domain string) (dns.AResult, error) {
 	ret := dns.AResult{}
 	searching := domain
 	for _, a := range ans.Answers {
+		// これだと順序が変わると引けなくなる。
 		if dns.Same(searching, a.Name) {
 			switch a.T {
 			case dns.A:
