@@ -1,0 +1,23 @@
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: run test
+        run: go test ./... -race
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install linters
+        run: |
+          GO111MODULE=off GOBIN=$(pwd)/bin go get -u golang.org/x/lint/golint
+      - name: run go vet
+        run: go vet ./...
+      - name: run golint
+        run: bin/golint -set_exit_status
