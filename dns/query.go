@@ -411,26 +411,33 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	return result, err
 }
 
-// Same decides args is same domain
-func Same(lhs, rhs string) bool {
-	// caseが異なっても同じであることを考える必要がある。
-	if lhs == rhs {
-		return true
-	}
-	if lhs == "" {
-		return rhs == "."
-	}
-	if rhs == "" {
-		return lhs == "."
-	}
-	if lhs[len(lhs)-1] == '.' {
-		if rhs[len(rhs)-1] != '.' {
-			return lhs[:len(lhs)-1] == rhs
-		}
+func sameImp(lhss, rhss []string) bool {
+	// lhss のほうが長い。
+	llen := len(lhss)
+	rlen := len(rhss)
+	if !(llen == rlen || llen == rlen+1) {
 		return false
 	}
-	if rhs[len(rhs)-1] == '.' {
-		return lhs == rhs[:len(rhs)-1]
+	for i := 0; i < rlen; i++ {
+		if lhss[i] != rhss[i] {
+			return false
+		}
 	}
-	return false
+	if llen == rlen {
+		return true
+	}
+	return lhss[llen-1] == ""
+}
+
+// Same decides args is same domain
+func Same(lhs, rhs string) bool {
+	lhss := strings.Split(strings.ToLower(lhs), ".")
+	rhss := strings.Split(strings.ToLower(rhs), ".")
+	llen := len(lhss)
+	rlen := len(rhss)
+
+	if rlen > llen {
+		return sameImp(rhss, lhss)
+	}
+	return sameImp(lhss, rhss)
 }
