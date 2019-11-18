@@ -92,6 +92,8 @@ func (r *ResourceRecord) TypeString() string {
 		return "CNAME"
 	case SOA:
 		return "SOA"
+	case AAAA:
+		return "AAAA"
 	default:
 		return fmt.Sprintf("unknown(%v)", r.T)
 	}
@@ -102,7 +104,7 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	switch t {
 	case A:
 		return fmt.Sprintf("%d.%d.%d.%d", r.Rdata[0], r.Rdata[1], r.Rdata[2], r.Rdata[3])
-	case CNAME:
+	case CNAME, NS:
 		name, _ := readName(r.head, r.RdataOffset)
 		return name
 	case SOA:
@@ -110,6 +112,8 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 		rname, rn := readName(r.head, r.RdataOffset+mn+1)
 		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+1+rn+2:])
 		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
+	case AAAA:
+		return "(ipv6 addr)"
 	default:
 		return "unknown"
 	}
@@ -221,6 +225,9 @@ func (h *Header) anCount() uint16 {
 }
 func (h *Header) nsCount() uint16 {
 	return h.c.NsCount
+}
+func (h *Header) arCount() uint16 {
+	return h.c.ArCount
 }
 func (h Header) String() string {
 	return fmt.Sprintf("{id: %v, qr: %v, opcode: %v, aa: %v, tc: %v, rd: %v, ra: %v, z: %v, ad: %v, cd: %v, rcode: %v, qdcount: %v, ancount: %v, nscount: %v, arcount: %v}",
@@ -381,6 +388,7 @@ func ParseAnswer(ans []byte) (Answer, error) {
 	result.Questions = make([]Question, h.qdCount())
 	result.Answers = make([]ResourceRecord, h.anCount())
 	result.Authorities = make([]ResourceRecord, h.nsCount())
+	result.Additionals = make([]ResourceRecord, h.arCount())
 	for i := 0; i < int(h.qdCount()); i++ {
 		q, qn, err := parseQuestion(ans[offset:])
 		fmt.Printf("answer question: %v(size: %v)\n", q, qn)
@@ -407,6 +415,15 @@ func ParseAnswer(ans []byte) (Answer, error) {
 		}
 		result.Authorities[i] = n
 		offset += nn
+	}
+	for i := 0; i < int(h.arCount()); i++ {
+		a, an, err := parseResourceRecord(ans, offset, result.head)
+		fmt.Printf("answer additional: %v(size: %v)\n", a, an)
+		if err != nil {
+			return result, err
+		}
+		result.Additionals[i] = a
+		offset += an
 	}
 	return result, err
 }

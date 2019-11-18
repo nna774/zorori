@@ -11,6 +11,8 @@ const (
 	CNAME = 5
 	// SOA is RR type SOA
 	SOA = 6
+	// AAAA is RR type AAAA
+	AAAA = 28
 	// IN is IN
 	IN = 1
 )
