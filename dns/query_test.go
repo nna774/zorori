@@ -46,3 +46,22 @@ func TestNotSame(t *testing.T) {
 		})
 	}
 }
+
+func TestReadName(t *testing.T) {
+	names := []struct {
+		name     []byte
+		len      int
+		expected string
+	}{
+		{[]byte{0}, 1, ""},
+		{[]byte{7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0}, 13, "example.com."},
+	}
+	for _, v := range names {
+		t.Run(v.expected, func(t *testing.T) {
+			name, len := readName(v.name, 0)
+			if name != v.expected || len != v.len {
+				t.Fatalf("expected (name, len): (%v, %v), but got (%v, %v).", v.expected, v.len, name, len)
+			}
+		})
+	}
+}
