@@ -1,16 +1,14 @@
-package dns_test
+package dns
 
 import (
 	"testing"
-
-	"github.com/nna774/zorori/dns"
 )
 
 func TestSame(t *testing.T) {
 	sames := []struct {
 		name string
-		lhs string
-		rhs string
+		lhs  string
+		rhs  string
 	}{
 		{"spaces", "", ""},
 		{"space and dot", "", "."},
@@ -21,7 +19,7 @@ func TestSame(t *testing.T) {
 	}
 	for _, v := range sames {
 		t.Run(v.name, func(t *testing.T) {
-			if !dns.Same(v.lhs, v.rhs) {
+			if !Same(v.lhs, v.rhs) {
 				t.Fatalf("%v and %v shold be same", v.lhs, v.rhs)
 			}
 		})
@@ -30,8 +28,8 @@ func TestSame(t *testing.T) {
 func TestNotSame(t *testing.T) {
 	diffs := []struct {
 		name string
-		lhs string
-		rhs string
+		lhs  string
+		rhs  string
 	}{
 		{"root", "root", ""},
 		{"root2", "root.", "."},
@@ -42,7 +40,7 @@ func TestNotSame(t *testing.T) {
 	}
 	for _, v := range diffs {
 		t.Run(v.name, func(t *testing.T) {
-			if dns.Same(v.lhs, v.rhs) {
+			if Same(v.lhs, v.rhs) {
 				t.Fatalf("%v and %v shold not be same", v.lhs, v.rhs)
 			}
 		})
