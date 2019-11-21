@@ -109,8 +109,8 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 		return name
 	case SOA:
 		mname, mn := readName(r.head, r.RdataOffset)
-		rname, rn := readName(r.head, r.RdataOffset+mn+1)
-		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+1+rn+2:])
+		rname, rn := readName(r.head, r.RdataOffset+mn)
+		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+rn+1:])
 		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
 	case AAAA:
 		return "(ipv6 addr)"
@@ -347,12 +347,12 @@ func readName(p []byte, begin int) (string, int) {
 		l = int(p[begin+n])
 		//fmt.Printf("l: %v, n: %d, l: %d\n", label, n, l)
 	}
-	return name, n
+	return name, n + 1
 }
 
 func parseQuestion(p []byte) (Question, int, error) {
 	name, n := readName(p, 0)
-	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 5, nil
+	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 4, nil
 }
 
 func parseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int, error) {
