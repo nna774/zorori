@@ -446,10 +446,19 @@ func sameImp(lhss, rhss []string) bool {
 	return lhss[llen-1] == ""
 }
 
+// Normalize normalize rr name
+func Normalize(name string) string {
+	name = strings.ToLower(name)
+	if !strings.HasSuffix(name, ".") {
+		name = name + "."
+	}
+	return name
+}
+
 // Same decides args is same domain
 func Same(lhs, rhs string) bool {
-	lhss := strings.Split(strings.ToLower(lhs), ".")
-	rhss := strings.Split(strings.ToLower(rhs), ".")
+	lhss := strings.Split(Normalize(lhs), ".")
+	rhss := strings.Split(Normalize(rhs), ".")
 	llen := len(lhss)
 	rlen := len(rhss)
 
