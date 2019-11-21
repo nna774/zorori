@@ -1,6 +1,9 @@
 package dns
 
-import "net"
+import (
+	"fmt"
+	"net"
+)
 
 const (
 	// A is RR type A
@@ -36,6 +39,23 @@ type Result interface {
 // AResult is result of A
 type AResult struct {
 	ip net.IP
+}
+
+func (q QueryType) String() string {
+	switch q {
+	case A:
+		return "A"
+	case NS:
+		return "NS"
+	case CNAME:
+		return "CNAME"
+	case SOA:
+		return "SOA"
+	case AAAA:
+		return "AAAA"
+	default:
+		return fmt.Sprintf("unknown(%d)", q)
+	}
 }
 
 // Type returns query type

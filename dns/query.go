@@ -83,20 +83,7 @@ func (r *ResourceRecord) ClassString() string {
 
 // TypeString shows rr type
 func (r *ResourceRecord) TypeString() string {
-	switch r.T {
-	case A:
-		return "A"
-	case NS:
-		return "NS"
-	case CNAME:
-		return "CNAME"
-	case SOA:
-		return "SOA"
-	case AAAA:
-		return "AAAA"
-	default:
-		return fmt.Sprintf("unknown(%v)", r.T)
-	}
+	return r.T.String()
 }
 
 // ShowRdata shows rr rdata
