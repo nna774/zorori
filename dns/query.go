@@ -270,7 +270,8 @@ func (q *Question) Read(p []byte) (n int, err error) {
 		return 0, io.EOF
 	}
 	n = 0
-	labels := strings.Split(q.name, ".")
+	name := Normalize(q.name) //
+	labels := strings.Split(name, ".")
 	for _, label := range labels {
 		len := len(label)
 		p[n] = byte(len)
@@ -279,12 +280,11 @@ func (q *Question) Read(p []byte) (n int, err error) {
 			p[n] = label[i]
 			n++
 		}
-		p[n] = 0 // eos
-		binary.BigEndian.PutUint16(p[n+1:], uint16(q.t))
-		binary.BigEndian.PutUint16(p[n+3:], IN)
 	}
+	binary.BigEndian.PutUint16(p[n:], uint16(q.t))
+	binary.BigEndian.PutUint16(p[n+2:], IN)
 	q.done = true
-	return n + 5, nil
+	return n + 4, nil
 }
 
 // NewQuery is ctor of Query
