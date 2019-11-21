@@ -58,6 +58,15 @@ func (q QueryType) String() string {
 	}
 }
 
+func (c Class) String() string {
+	switch c {
+	case IN:
+		return "IN"
+	default:
+		return fmt.Sprintf("unknown(%d)", c)
+	}
+}
+
 // Type returns query type
 func (a *AResult) Type() QueryType {
 	return A

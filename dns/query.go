@@ -75,10 +75,7 @@ func (r ResourceRecord) String() string {
 
 // ClassString shows class
 func (r *ResourceRecord) ClassString() string {
-	if r.Class == IN {
-		return "IN"
-	}
-	return fmt.Sprintf("unknown(%v)", r.Class)
+	return r.Class.String()
 }
 
 // TypeString shows rr type
