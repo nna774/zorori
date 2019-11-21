@@ -110,7 +110,7 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	case SOA:
 		mname, mn := readName(r.head, r.RdataOffset)
 		rname, rn := readName(r.head, r.RdataOffset+mn)
-		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+rn+1:])
+		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+rn:])
 		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
 	case AAAA:
 		return "(ipv6 addr)"
