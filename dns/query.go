@@ -352,7 +352,7 @@ func readName(p []byte, begin int) (string, int) {
 
 func parseQuestion(p []byte) (Question, int, error) {
 	name, n := readName(p, 0)
-	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n+1:]))}, n + 4, nil
+	return Question{name: name, t: QueryType(binary.BigEndian.Uint16(p[n:]))}, n + 4, nil
 }
 
 func parseResourceRecord(p []byte, begin int, head []byte) (ResourceRecord, int, error) {
