@@ -102,8 +102,8 @@ func (r *ResourceRecord) TypeString() string {
 // ShowRdata shows rr rdata
 func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	switch t {
-	case A:
-		return fmt.Sprintf("%d.%d.%d.%d", r.Rdata[0], r.Rdata[1], r.Rdata[2], r.Rdata[3])
+	case A, AAAA:
+		return fmt.Sprintf("%v", net.IP(r.Rdata))
 	case CNAME, NS:
 		name, _ := readName(r.head, r.RdataOffset)
 		return name
@@ -112,8 +112,6 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 		rname, rn := readName(r.head, r.RdataOffset+mn)
 		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+rn:])
 		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
-	case AAAA:
-		return "(ipv6 addr)"
 	default:
 		return "unknown"
 	}
