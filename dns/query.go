@@ -65,22 +65,12 @@ type Answer struct {
 func (r ResourceRecord) String() string {
 	return fmt.Sprintf("{Name: %v, Type: %v, Class: %v, TTL: %d, RdLength: %d, Rdata: %v}",
 		r.Name,
-		r.TypeString(),
-		r.ClassString(),
+		r.T,
+		r.Class,
 		r.TTL,
 		r.RdLength,
 		r.ShowRdata(r.T),
 	)
-}
-
-// ClassString shows class
-func (r *ResourceRecord) ClassString() string {
-	return r.Class.String()
-}
-
-// TypeString shows rr type
-func (r *ResourceRecord) TypeString() string {
-	return r.T.String()
 }
 
 // ShowRdata shows rr rdata
