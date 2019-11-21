@@ -19,6 +19,7 @@ var (
 	mode         = flag.String("mode", "doh", "resolve mode")
 	stub         = flag.Bool("stub", true, "stub resolve")
 	fullResolver = flag.String("fullresolver", "8.8.8.8", "ip addr of full resolver")
+	dohServer    = flag.String("doh", "https://dns.google/dns-query", "doh server")
 )
 
 func main() {
@@ -30,8 +31,7 @@ func main() {
 	}
 
 	if *mode == "doh" {
-		//	resolver := resolver.NewDoHResolver("https://public.dns.iij.jp/dns-query")
-		resolver := doh.NewDoHResolver("https://dns.google/dns-query")
+		resolver := doh.NewDoHResolver(*dohServer)
 		res, err := resolver.AResolve(name)
 		if err != nil {
 			fmt.Printf("bie %v", err)
