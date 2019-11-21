@@ -65,3 +65,26 @@ func TestReadName(t *testing.T) {
 		})
 	}
 }
+
+func TestReadNameWithCompression(t *testing.T) {
+	names := []struct {
+		name     []byte
+		len      int
+		begin    int
+		expected string
+	}{
+		{[]byte{7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0}, 13, 0, "example.com"},
+		{[]byte{7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0, 0xc0, 0}, 2, 13, "example.com"},
+		{[]byte{'p', 'a', 'd', 7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0, 0xc0, 3}, 2, 16, "example.com"},
+		{[]byte{7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0, 2, 'n', 's', 0xc0, 0}, 5, 13, "ns.example.com"},
+		{[]byte{'p', 'a', 'd', 7, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 3, 'c', 'o', 'm', 0, 2, 'n', 's', 0xc0, 3}, 5, 16, "ns.example.com"},
+	}
+	for _, v := range names {
+		t.Run(v.expected, func(t *testing.T) {
+			name, len := readName(v.name, v.begin)
+			if !Same(name, v.expected) || len != v.len {
+				t.Fatalf("expected (name, len): (%v, %v), but got (%v, %v).", v.expected, v.len, name, len)
+			}
+		})
+	}
+}
