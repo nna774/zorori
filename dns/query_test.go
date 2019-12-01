@@ -88,3 +88,21 @@ func TestReadNameWithCompression(t *testing.T) {
 		})
 	}
 }
+
+func TestNameIdentity(t *testing.T) {
+	names := []struct {
+		name string
+	}{
+		{"example.com"},
+	}
+	for _, v := range names {
+		t.Run(v.name, func(t *testing.T) {
+			buf := make([]byte, 1500)
+			WriteName(buf, v.name)
+			name, _ := readName(buf, 0)
+			if !Same(name, v.name) {
+				t.Fatalf("expected: %v, but got %v.", v.name, name)
+			}
+		})
+	}
+}

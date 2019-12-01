@@ -237,12 +237,9 @@ func (h *Header) Read(p []byte) (n int, err error) {
 	return n, err
 }
 
-func (q *Question) Read(p []byte) (n int, err error) {
-	if q.done {
-		return 0, io.EOF
-	}
-	n = 0
-	name := Normalize(q.name) //
+// WriteName writes name
+func WriteName(p []byte, name string) int {
+	n := 0
 	labels := strings.Split(name, ".")
 	for _, label := range labels {
 		len := len(label)
@@ -253,6 +250,15 @@ func (q *Question) Read(p []byte) (n int, err error) {
 			n++
 		}
 	}
+	return n
+}
+
+func (q *Question) Read(p []byte) (n int, err error) {
+	if q.done {
+		return 0, io.EOF
+	}
+	name := Normalize(q.name) //
+	n = WriteName(p, name)
 	binary.BigEndian.PutUint16(p[n:], uint16(q.t))
 	binary.BigEndian.PutUint16(p[n+2:], IN)
 	q.done = true
