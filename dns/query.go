@@ -94,6 +94,7 @@ func parseSVCParams(data []byte) map[int]string {
 		offset += 2 + valLen
 		val := ""
 		switch key {
+		// see https://www.iana.org/assignments/dns-svcb/dns-svcb.xhtml
 		case 1: // alpn
 			ss := []string{}
 			for i := 0; i < valLen; {
@@ -102,6 +103,8 @@ func parseSVCParams(data []byte) map[int]string {
 				ss = append(ss, s)
 			}
 			val = "apln=" + strings.Join(ss, ",")
+		case 7: // dohpath
+			val = "dohpath=" + string(valData)
 		default:
 			val = fmt.Sprintf("key %v=%v", key, string(valData))
 		}
