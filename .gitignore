@@ -1,4 +1,5 @@
 cmd/zorori/zorori
+/zorori
 
 # Binaries for programs and plugins
 *.exe
