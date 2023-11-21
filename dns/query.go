@@ -73,6 +73,43 @@ func (r ResourceRecord) String() string {
 	)
 }
 
+func readStringWithLength(p []byte) (string, int) {
+	l := int(p[0])
+	s := ""
+	offset := 1
+	for i := 0; i < l; i++ {
+		s += string(p[offset+i])
+	}
+	return s, l + 1
+}
+
+func parseSVCParams(data []byte) map[int]string {
+	params := map[int]string{}
+	offset := 0
+	for offset < len(data) {
+		key := int(binary.BigEndian.Uint16(data[offset : offset+2]))
+		offset += 2
+		valLen := int(binary.BigEndian.Uint16(data[offset : offset+2])) // val len
+		valData := data[offset+2 : offset+2+valLen]
+		offset += 2 + valLen
+		val := ""
+		switch key {
+		case 1: // alpn
+			ss := []string{}
+			for i := 0; i < valLen; {
+				s, advance := readStringWithLength(valData[i:])
+				i += advance
+				ss = append(ss, s)
+			}
+			val = "apln=" + strings.Join(ss, ",")
+		default:
+			val = fmt.Sprintf("key %v=%v", key, string(valData))
+		}
+		params[key] = val
+	}
+	return params
+}
+
 // ShowRdata shows rr rdata
 func (r *ResourceRecord) ShowRdata(t QueryType) string {
 	switch t {
@@ -86,6 +123,11 @@ func (r *ResourceRecord) ShowRdata(t QueryType) string {
 		rname, rn := readName(r.head, r.RdataOffset+mn)
 		serial := binary.BigEndian.Uint32(r.head[r.RdataOffset+mn+rn:])
 		return fmt.Sprintf("{mname: %v, rname: %v, serial: %v}", mname, rname, serial)
+	case SVCB:
+		priority := binary.BigEndian.Uint16(r.head[r.RdataOffset:])
+		target, tn := readName(r.head, r.RdataOffset+2)
+		params := parseSVCParams(r.head[r.RdataOffset+2+tn : r.RdataOffset+int(r.RdLength)])
+		return fmt.Sprintf("{priority: %v, target: %v, rest: %v}", priority, target, params)
 	default:
 		return "unknown"
 	}

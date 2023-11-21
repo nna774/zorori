@@ -16,6 +16,11 @@ const (
 	SOA = 6
 	// AAAA is RR type AAAA
 	AAAA = 28
+	// SVCB is
+	SVCB = 64
+	// HTTPS is
+	HTTPS = 65
+
 	// IN is IN
 	IN = 1
 )
@@ -41,6 +46,12 @@ type AResult struct {
 	ip net.IP
 }
 
+type SVCBResult struct {
+	Priority int
+	Target   string
+	Params   map[int]string
+}
+
 func (q QueryType) String() string {
 	switch q {
 	case A:
@@ -53,6 +64,10 @@ func (q QueryType) String() string {
 		return "SOA"
 	case AAAA:
 		return "AAAA"
+	case SVCB:
+		return "SVCB"
+	case HTTPS:
+		return "HTTPS"
 	default:
 		return fmt.Sprintf("unknown(%d)", q)
 	}

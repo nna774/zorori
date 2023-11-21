@@ -66,3 +66,7 @@ func (r *doHResolver) AResolve(domain string) (dns.AResult, error) {
 
 	return ret, nil
 }
+
+func (r *doHResolver) SVCBResolve() (dns.SVCBResult, error) {
+	return dns.SVCBResult{}, nil
+}

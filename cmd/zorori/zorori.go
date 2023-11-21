@@ -51,6 +51,13 @@ func main() {
 			return
 		}
 		fmt.Printf("A: %v\n", res.IP())
+	case "SVCB":
+		res, err := resolver.SVCBResolve()
+		if err != nil {
+			fmt.Printf("bie %v", err)
+			return
+		}
+		fmt.Printf("SVCB: %v %v %v\n", res.Priority, res.Target, res.Params)
 	default:
 		fmt.Printf("unknown query type: %v\n", *queryType)
 	}
