@@ -20,6 +20,7 @@ var (
 	stub         = flag.Bool("stub", true, "stub resolve")
 	fullResolver = flag.String("fullresolver", "8.8.8.8", "ip addr of full resolver")
 	dohServer    = flag.String("doh", "https://dns.google/dns-query", "doh server")
+	queryType    = flag.String("type", "A", "query type")
 )
 
 func main() {
@@ -41,10 +42,16 @@ func main() {
 			resolver = udp.NewUDPFullResolver()
 		}
 	}
-	res, err := resolver.AResolve(name)
-	if err != nil {
-		fmt.Printf("bie %v", err)
-		return
+
+	switch *queryType {
+	case "A":
+		res, err := resolver.AResolve(name)
+		if err != nil {
+			fmt.Printf("bie %v", err)
+			return
+		}
+		fmt.Printf("A: %v\n", res.IP())
+	default:
+		fmt.Printf("unknown query type: %v\n", *queryType)
 	}
-	fmt.Printf("A: %v\n", res.IP())
 }
