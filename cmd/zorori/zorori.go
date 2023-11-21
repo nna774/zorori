@@ -30,27 +30,21 @@ func main() {
 		name = args[0]
 	}
 
+	var resolver resolver.Resolver
 	if *mode == "doh" {
-		resolver := doh.NewDoHResolver(*dohServer)
-		res, err := resolver.AResolve(name)
-		if err != nil {
-			fmt.Printf("bie %v", err)
-			return
-		}
-		fmt.Printf("A: %v\n", res.IP())
+		resolver = doh.NewDoHResolver(*dohServer)
 	}
 	if *mode == "udp" {
-		var resolver resolver.Resolver
 		if *stub {
 			resolver = udp.NewUDPStubResolver(net.ParseIP(*fullResolver))
 		} else {
 			resolver = udp.NewUDPFullResolver()
 		}
-		res, err := resolver.AResolve(name)
-		if err != nil {
-			fmt.Printf("bie %v", err)
-			return
-		}
-		fmt.Printf("A: %v\n", res.IP())
 	}
+	res, err := resolver.AResolve(name)
+	if err != nil {
+		fmt.Printf("bie %v", err)
+		return
+	}
+	fmt.Printf("A: %v\n", res.IP())
 }
