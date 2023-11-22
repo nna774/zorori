@@ -103,6 +103,8 @@ func parseSVCParams(data []byte) map[int]string {
 				ss = append(ss, s)
 			}
 			val = "apln=" + strings.Join(ss, ",")
+		case 3: // port
+			val = fmt.Sprintf("port=%v", int(binary.BigEndian.Uint16(valData)))
 		case 7: // dohpath
 			val = "dohpath=" + string(valData)
 		default:
