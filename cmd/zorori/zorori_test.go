@@ -23,8 +23,7 @@ func TestDoHAResolve(t *testing.T) {
 			ip     net.IP
 		}{
 			{domain: "example.com", ip: net.ParseIP("93.184.216.34")},
-			{domain: "ushio.compute.kitashirakawa.dark-kuins.net", ip: net.ParseIP("192.50.220.189")},
-			{domain: "ushio.c.k.dark-kuins.net", ip: net.ParseIP("192.50.220.189")},
+			{domain: "yukari.router.kitashirakawa.dark-kuins.net", ip: net.ParseIP("192.50.220.189")},
 		}
 		for _, d := range domains {
 			t.Run(r.name+"-"+d.domain, func(t *testing.T) {
