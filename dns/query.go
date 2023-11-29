@@ -105,6 +105,24 @@ func parseSVCParams(data []byte) map[int]string {
 			val = "apln=" + strings.Join(ss, ",")
 		case 3: // port
 			val = fmt.Sprintf("port=%v", int(binary.BigEndian.Uint16(valData)))
+		case 4: // ipv4hint
+			if len(valData)%4 != 0 {
+				panic("what's??")
+			}
+			addrs := []string{}
+			for i := 0; i < len(valData); i += 4 {
+				addrs = append(addrs, fmt.Sprintf("%v", net.IP(valData[i:i+4])))
+			}
+			val = fmt.Sprintf("ipv4hint='%v'", strings.Join(addrs, ", "))
+		case 6: // ipv6hint
+			if len(valData)%16 != 0 {
+				panic("what's??")
+			}
+			addrs := []string{}
+			for i := 0; i < len(valData); i += 16 {
+				addrs = append(addrs, fmt.Sprintf("%v", net.IP(valData[i:i+16])))
+			}
+			val = fmt.Sprintf("ipv6hint='%v'", strings.Join(addrs, ", "))
 		case 7: // dohpath
 			val = "dohpath=" + string(valData)
 		default:
